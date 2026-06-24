@@ -2,8 +2,6 @@
 
 Transforming complex legal clauses into plain English explanations using Knowledge Distillation, Chain of Thought (CoT) Reasoning, QLoRA Fine-Tuning, and Lightweight CPU Deployment.
 
-## Live Demo
-
 ## Live Demo & Resources
 
 | Resource | Description | Link |
