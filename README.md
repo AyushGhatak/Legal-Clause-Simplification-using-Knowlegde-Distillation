@@ -2,6 +2,17 @@
 
 Transforming complex legal clauses into plain English explanations using Knowledge Distillation, Chain of Thought (CoT) Reasoning, QLoRA Fine-Tuning, and Lightweight CPU Deployment.
 
+## Live Demo
+
+## Live Demo & Resources
+
+| Resource | Description | Link |
+|-----------|-------------|------|
+| Web Application | Interactive legal clause simplification demo | [Launch App](https://ayushhh1662309-legal-snippet-simplifier.hf.space) |
+| Fine-Tuned Model | Merged Qwen2.5-3B model after LoRA fine-tuning | [qwen2.5-3b-legal-merged](https://huggingface.co/ayushhh1662309/qwen2.5-3b-legal-merged) |
+| Quantized Model | 5-bit GGUF model optimized for CPU inference | [qwen2.5-3b-legal-merged-Q5_K_M-GGUF](https://huggingface.co/ayushhh1662309/qwen2.5-3b-legal-merged-Q5_K_M-GGUF) |
+| Space Repository | Hugging Face Space source code and deployment files | [View Files](https://huggingface.co/spaces/ayushhh1662309/Legal-Snippet-Simplifier/tree/main) |
+
 ---
 
 ## Overview
@@ -486,6 +497,4 @@ The generated outputs are simplified interpretations of legal text and should no
 
 Ayush Ghatak
 
-## Domains Covered
-
-Legal AI • NLP • Large Language Models (LLMs) • Knowledge Distillation • Chain-of-Thought Distillation • Supervised Fine-Tuning • LoRA • QLoRA • PEFT • Prompt Engineering • Dataset Engineering • Zero-Shot Classification • Natural Language Inference (NLI) • Model Quantization • GGUF • Hugging Face • Gradio • LLM Deployment 
+• Legal AI • NLP • Large Language Models (LLMs) • Knowledge Distillation • Chain-of-Thought Distillation • Supervised Fine-Tuning • LoRA • QLoRA • PEFT • Prompt Engineering • Dataset Engineering • Zero-Shot Classification • Natural Language Inference (NLI) • Model Quantization • GGUF • Hugging Face • Gradio • LLM Deployment 
