@@ -1,6 +1,6 @@
-# Legal-Clause-Simplification-using-Knowlegde-Distillation
+# Legal-Clause-Simplification-using-Knowledge-Distillation
 
-Transforming complex legal clauses into plain English explanations using Knowledge Distillation, Chain-of-Thought (CoT) supervision, QLoRA fine-tuning, and efficient CPU deployment.
+Transforming complex legal clauses into plain English explanations using Knowledge Distillation, Chain of Thought (CoT) Reasoning, QLoRA Fine-Tuning, and Lightweight CPU Deployment.
 
 ---
 
@@ -10,30 +10,30 @@ Legal contracts and agreements often contain dense language, legal jargon, and c
 
 This project develops a specialized Legal Clause Simplification system that converts legal text into clear, human-readable explanations while preserving the original legal meaning.
 
-The system leverages a teacher-student training paradigm where a larger language model generates reasoning traces and explanations that are subsequently distilled into a smaller student model.
+The system follows a teacher-student training paradigm, where a larger language model generates reasoning traces and simplified explanations that are subsequently distilled into a smaller student model.
 
 The final model was:
 
-- Fine-tuned using LoRA + QLoRA.
-- Quantized into GGUF format.
-- Converted to 5-bit precision.
-- Deployed on Hugging Face Spaces.
-- Served entirely on the free CPU tier.
-- Integrated with a Gradio-based user interface.
+* Fine-tuned using LoRA + QLoRA.
+* Quantized into GGUF format.
+* Converted to 5-bit precision.
+* Deployed on Hugging Face Spaces.
+* Served entirely on the free CPU tier.
+* Integrated with a Gradio-based interface that provides both simplified explanations and optional reasoning traces.
 
 ---
 
 # Key Highlights
 
-- Built a complete end-to-end legal NLP pipeline.
-- Merged multiple legal simplification datasets into a unified corpus.
-- Generated reasoning traces using a teacher LLM via Groq API.
-- Implemented Chain-of-Thought Knowledge Distillation.
-- Fine-tuned Qwen2.5-3B-Instruct using QLoRA.
-- Added domain guardrails using zero-shot classification.
-- Converted the model into 5-bit GGUF format.
-- Deployed successfully on Hugging Face Spaces CPU infrastructure.
-- Developed a Gradio-based frontend for interactive inference.
+* Built a complete end-to-end legal NLP pipeline.
+* Generated Chain-of-Thought reasoning traces using a teacher model through the Groq API.
+* Created a distilled dataset containing complex legal clause, CoT reasoning and plain-English explanations.
+* Fine-tuned Qwen2.5-3B-Instruct using LoRA and QLoRA.
+* Computed training loss only on assistant responses while masking user prompt tokens.
+* Added domain guardrails using zero-shot classification.
+* Converted the model to 5-bit GGUF format for efficient inference.
+* Deployed successfully on Hugging Face Spaces CPU infrastructure.
+* Developed a Gradio-based web application with plain-English clause simplification and optional Chain-of-Thought reasoning visualization.
 
 ---
 
@@ -41,62 +41,41 @@ The final model was:
 
 Legal clauses frequently contain:
 
-- Complex legal terminology.
-- Long and nested sentence structures.
-- Ambiguous wording for non-experts.
-- Hidden obligations and liabilities.
-
-Most general-purpose language models either:
-
-- Oversimplify legal meaning.
-- Omit important obligations.
-- Produce legally inaccurate interpretations.
+* Complex legal terminology.
+* Long and nested sentence structures.
+* Ambiguous wording for non-experts.
+* Hidden obligations and liabilities.
 
 The goal of this project was to create a domain-specialized model capable of generating understandable explanations while preserving contractual intent and legal semantics.
 
 ---
 
-# Project Architecture
+# Project Pipeline
 
-The complete workflow consists of:
+The project was developed through the following stages:
 
-1. Legal dataset collection.
-2. Dataset cleaning and standardization.
-3. Teacher model reasoning generation.
-4. Chain-of-Thought dataset creation.
-5. Student model fine-tuning.
-6. Model quantization.
-7. CPU deployment.
-8. Web interface integration.
-
----
-
-# Dataset Collection
-
-Multiple legal simplification datasets were collected and merged to create a unified training corpus.
-
-The datasets contained:
-
-- Original legal clauses.
-- Plain-English explanations.
-- Contract provisions.
-- Legal obligations and conditions.
-
-The objective was to maximize diversity across:
-
-- Contracts
-- Terms of service
-- Licensing agreements
-- Legal notices
-- Commercial agreements
+1. Collected multiple legal simplification datasets from Hugging Face.
+2. Cleaned and standardized the datasets amd merged into a unified .csv file.
+3. Generated reasoning traces using a teacher model accessed through the Groq API.
+4. Constructed a Chain-of-Thought distilled dataset.
+5. Fine-tuned a student model using QLoRA and LoRA.
+6. Added inference-time domain guardrails using zero-shot classification.
+7. Merged LoRA adapters into the base model.
+8. Converted the model into GGUF format.
+9. Quantized the model to 5-bit precision.
+10. Deployed the application on Hugging Face Spaces using the free CPU tier.
 
 ---
 
-# Dataset Standardization
+# Dataset Preparation
 
-Since each dataset followed a different schema, all datasets were transformed into a common format.
+The following datasets were collected and merged into a single training corpus.
 
-Unified structure:
+* mteb/legal_summarization
+* CodeHima/TOS_Dataset
+* mteb/UnfairTOSLegalBenchClassification
+
+Since each dataset followed a different schema, all datasets were transformed into a unified structure:
 
 ```json
 {
@@ -105,101 +84,74 @@ Unified structure:
 }
 ```
 
-Standardization steps included:
+Preprocessing included:
 
-- Column renaming.
-- Duplicate removal.
-- Null value filtering.
-- Text normalization.
-- Whitespace cleanup.
-- Length filtering.
-- Encoding normalization.
+* Column standardization.
+* Duplicate removal.
+* Null-value filtering.
+* Formatting cleanup.
+* Length validation.
 
-This produced a consistent legal simplification dataset suitable for downstream processing.
+This produced a consistent dataset suitable for knowledge distillation and fine-tuning.
 
 ---
 
 # Knowledge Distillation
 
-## Motivation
+## Teacher Model
 
-Directly training a model on:
+Llama-4-scout-17b-16e-instruct (17B active parameter) was accessed through the Groq API (serverless inference api) and used as the teacher model.
+
+Instead of directly learning:
 
 ```text
 Legal Clause → Simplified Explanation
 ```
 
-often causes the model to memorize outputs without learning the underlying legal reasoning.
+the student model was trained on:
 
-To address this issue, Chain-of-Thought Distillation was used.
+```text
+Legal Clause → Reasoning Process → Simplified Explanation
+```
 
-The teacher model was instructed to explicitly reason through legal clauses before producing simplified explanations.
+This approach encourages the model to learn the underlying legal reasoning before generating simplified outputs.
 
----
-
-# Teacher Model
-
-A larger language model was accessed through the Groq API.
-
-The teacher model was responsible for:
-
-- Understanding legal terminology.
-- Identifying obligations.
-- Extracting legal intent.
-- Generating reasoning traces.
-- Producing simplified explanations.
-
-Teacher inference was performed programmatically using the Groq API across the entire training corpus.
+Note: This teacher model was learned on 450 samples from the unified preprocessed dataset (csv file).
 
 ---
 
-# Teacher Output Structure
+## Teacher Output Structure
 
-Each legal clause was transformed into a structured reasoning format.
-
-The generated output followed three stages:
+Each legal clause was transformed into a structured reasoning format consisting of three stages:
 
 ```text
 IDENTIFY
 TRANSLATE
-COGNITIVE
+COGNITIVE TRACE
 ```
 
 ### IDENTIFY
 
-The model identifies:
+Recognizes:
 
-- Legal obligations.
-- Responsibilities.
-- Restrictions.
-- Rights.
-- Conditions.
+* document type
+* jurisdiction (if mentioned)
+* primary legal objective
 
 ### TRANSLATE
 
-The model converts legal terminology into plain language.
+Converts legal terminology into plain language.
 
-Examples:
+### COGNITIVE TRACE
 
-```text
-indemnify → compensate for losses
-
-hold harmless → protect from liability
-
-terminate → end the agreement
-```
-
-### COGNITIVE
-
-The model generates the final human-readable explanation.
+The step-by-step logical breakdown of the text: who owns what, conditions and exceptions under which the rules are applicable, etc.
 
 Example:
 
 ```text
 Input:
 
-The Licensee shall indemnify and hold harmless
-the Licensor from all liabilities.
+The Licensee shall indemnify and hold harmless the Licensor.
 
 Output:
 
@@ -209,19 +161,18 @@ The licensee assumes liability.
 TRANSLATE:
 The licensee must cover losses.
 
-COGNITIVE:
-If legal issues arise from the licensee's actions,
-the licensee is responsible for handling and
-paying for those issues instead of the licensor.
+COGNITIVE TRACE:
+If legal issues arise because of the licensee's actions,
+the licensee is responsible for handling those issues and costs.
 ```
 
 ---
 
-# Distilled Dataset Construction
+## Distilled Dataset Construction
 
-After teacher inference, the generated outputs were merged with the original legal clauses.
+Teacher-generated outputs were combined with the original legal clauses to create the final distilled dataset.
 
-Final distilled format:
+Structure:
 
 ```json
 {
@@ -230,77 +181,58 @@ Final distilled format:
 }
 ```
 
-This created a supervised dataset where the student model learns:
+Additional cleaning was performed to remove:
 
-- Legal reasoning.
-- Obligation extraction.
-- Semantic interpretation.
-- Plain-English generation.
-
----
-
-# Distilled Dataset Cleaning
-
-The generated teacher outputs were further processed before training.
-
-Cleaning steps included:
-
-- Removing malformed responses.
-- Filtering incomplete reasoning chains.
-- Removing duplicated examples.
-- Enforcing output formatting consistency.
-- Eliminating generation artifacts.
-- Length validation.
-
-This ensured high-quality supervision for student training.
+* Incomplete generations.
+* Formatting inconsistencies.
+* Duplicate samples.
+* Invalid reasoning traces.
 
 ---
 
-# Student Model Selection
+# Fine-Tuning
 
-## Base Model
+## Student Model
 
-Qwen2.5-3B-Instruct
+The student model used for fine-tuning was:
 
-Reasons for selection:
+```text
+Qwen2.5-3B-Instruct (3B parameters)
+```
 
-- Strong instruction-following capability.
-- Efficient parameter count.
-- Good reasoning performance.
-- Suitable for quantization and deployment.
-
----
-
-# Fine-Tuning Strategy
-
-Parameter-Efficient Fine-Tuning was used to reduce memory requirements and training costs.
-
-The training pipeline combined:
-
-- LoRA
-- QLoRA
-- 4-bit quantization
-- Hugging Face Transformers
-- PEFT
+Training was performed using Google Colab on an NVIDIA Tesla T4 GPU.
 
 ---
 
-# QLoRA Configuration
+## Training Environment
 
-The base model was loaded in 4-bit precision.
+### Hardware
 
-Benefits:
+* Google Colab
+* NVIDIA Tesla T4 GPU (16 GB VRAM)
 
-- Reduced VRAM consumption.
-- Lower training cost.
-- Faster experimentation.
-- Ability to fine-tune larger models on limited hardware.
+### Core Libraries (versions)
+
+```bash
+torch==2.4.0
+torchvision==0.19.0
+bitsandbytes==0.43.3
+transformers==4.44.0
+peft==0.12.0
+accelerate==0.34.0
+```
 
 ---
 
-# LoRA Configuration
+## QLoRA Configuration
 
-The following modules were targeted:
+The model was loaded using 4-bit NF4 quantization through BitsAndBytes.
+
+---
+
+## LoRA Configuration
+
+Adapters were applied to both attention and feed-forward layers:
 
 ```python
 [
@@ -316,214 +248,181 @@ The following modules were targeted:
 
 Training parameters:
 
-```text
-Rank (r): 16
-Alpha: 32
-Dropout: 0.05
-Bias: none
-Task Type: CAUSAL_LM
-```
-
-These layers were selected to adapt both:
-
-- Attention blocks.
-- Feed-forward blocks.
-
-while keeping the number of trainable parameters low.
+| Parameter     | Value     |
+| ------------- | --------- |
+| LoRA Rank (r) | 16        |
+| LoRA Alpha    | 32        |
+| LoRA Dropout  | 0.05      |
+| Bias          | none      |
+| Task Type     | CAUSAL_LM |
 
 ---
 
-# Chat Template Design
+## Chat Template
 
-The distilled dataset was converted into a conversational format suitable for instruction tuning.
-
-Structure:
+The distilled dataset was converted into a conversational instruction-tuning format:
 
 ```json
 {
   "messages": [
     {
+      "role": "system",
+      "content": "Legal analyst instructions..."
+    },
+    {
       "role": "user",
-      "content": "Legal Clause"
+      "content": "<task>...</task><contract_clause>...</contract_clause>"
     },
     {
       "role": "assistant",
-      "content": "Reasoning + Simplified Explanation"
+      "content": "<Reasoning>...</Reasoning><Summary>...</Summary>"
     }
   ]
 }
 ```
 
-Example:
+The dataset used explicit tags to separate:
 
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "content": "The Licensee shall indemnify..."
-    },
-    {
-      "role": "assistant",
-      "content": "IDENTIFY...\nTRANSLATE...\nCOGNITIVE..."
-    }
-  ]
-}
-```
+- Task instructions
+- Input legal clauses
+- Reasoning traces
+- Final simplified summaries
 
-This format aligns with instruction-tuning objectives used by modern chat models.
+This structure enabled the model to learn a consistent reasoning pipeline before generating the final plain-English explanation.
 
 ---
 
-# Training Objective
+## Training Strategy
 
-The student model learns to:
+The model was trained using Hugging Face Transformers and PEFT (Parameter Efficient Fine Tuning).
 
-- Understand legal terminology.
-- Infer contractual obligations.
-- Generate reasoning traces.
-- Produce simplified explanations.
-- Preserve legal meaning.
+| Parameter             | Value            |
+| --------------------- | ---------------- |
+| Epochs                | 3                |
+| Learning Rate         | 1e-4             |
+| Batch Size            | 1                |
+| Gradient Accumulation | 8                |
+| Effective Batch Size  | 8                |
+| Optimizer             | paged_adamw_8bit |
+| Scheduler             | cosine           |
+| Weight Decay          | 0.01             |
+| Precision             | FP16             |
+
+Note: To improve instruction-following behavior, loss was computed only on assistant responses while user prompt tokens were masked during training. This ensures the model learns to generate reasoning traces and simplified explanations rather than reproducing the input prompt.
 
 ---
 
 # Domain Guardrails
 
-A zero-shot classification model was integrated during inference.
+To ensure the system remains focused on legal simplification tasks, a zero-shot classification layer was integrated before inference.
 
-Model:
+Model used:
 
 ```text
 MoritzLaurer/bge-m3-zeroshot-v2.0
 ```
 
-Purpose:
+The classifier operates using Natural Language Inference (NLI).
 
-- Detect non-legal queries.
-- Restrict model usage to legal simplification.
-- Improve reliability.
+Instead of directly predicting a category, the model evaluates whether a hypothesis statement is true or false.
 
-Examples rejected:
+Example:
 
 ```text
-What is the capital of France?
+Input:
+"The agreement shall remain valid for two years."
 
-Write a Python script.
+Hypothesis:
+"This text is about legal contracts."
 
-Explain quantum mechanics.
+Result:
+Entailment → Legal Query
 ```
+
+Only queries classified as legal are forwarded to the fine-tuned student model, improving reliability and reducing off-domain responses.
 
 ---
 
 # Inference Pipeline
 
-The deployed system performs the following steps:
+During inference, the system performs the following steps:
 
-1. Receives user input.
+1. Accepts a user-provided clause.
 2. Runs zero-shot legal-domain classification.
-3. Rejects out-of-domain queries.
+3. Rejects non-legal inputs.
 4. Sends valid legal clauses to the fine-tuned model.
-5. Generates a plain-English explanation.
+5. Generates a plain-English explanation along with the CoT reasoning trace.
 6. Returns the response to the user.
 
 ---
 
-# Model Merging
+# Quantization and Deployment
 
 After training:
 
 1. LoRA adapters were merged with the base model.
-2. The merged model was exported.
-3. The final checkpoint was prepared for quantization.
+2. The merged model was exported to Hugging Face.
+3. The model was converted to GGUF format.
+4. A 5-bit quantized version was generated.
+5. The application was deployed on Hugging Face Spaces.
 
-This removes dependency on separate adapter files during deployment.
+Benefits of GGUF deployment:
 
----
+* Smaller model size.
+* Lower RAM requirements.
+* Faster CPU inference.
+* Easier deployment.
 
-# GGUF Conversion
-
-The merged model was converted into GGUF format.
-
-Benefits:
-
-- Faster inference.
-- Reduced memory footprint.
-- Better CPU compatibility.
-- Easier deployment.
-
----
-
-# Quantization
-
-The model was quantized to 5-bit precision.
-
-Benefits:
-
-- Smaller storage size.
-- Lower RAM usage.
-- Faster inference speed.
-- Suitable for CPU-only hosting.
-
-The quantized model maintained strong simplification performance while significantly reducing deployment costs.
-
----
-
-# Hugging Face Deployment
-
-The quantized GGUF model was uploaded to Hugging Face Hub.
-
-Deployment objectives:
-
-- Public accessibility.
-- Reproducibility.
-- Lightweight inference.
-
-The deployment demonstrates that domain-specific LLM applications can be served without dedicated GPU infrastructure.
+Note: The application runs entirely on the Hugging Face Spaces free CPU tier, as a result the output generation can be slower for large clauses.
 
 ---
 
 # Gradio Frontend
 
-A Gradio-based interface was developed to provide an interactive user experience.
+A lightweight Gradio interface was developed and integrated into Hugging Face Spaces to provide an interactive user experience.
 
-Features:
+### User Workflow
 
-- Legal clause input box.
-- One-click simplification.
-- Guardrail validation.
-- Real-time inference.
-- User-friendly interface.
-
-The frontend was integrated directly into Hugging Face Spaces.
+1. Enter a legal clause in the input text box.
+2. The system validates whether the input belongs to the legal domain using zero-shot classification.
+3. If the input is classified as legal, it is forwarded to the fine-tuned model.
+4. The model generates:
+   * A simplified plain-English explanation.
+   * An optional reasoning trace **Show Reasoning Chain** showing how the conclusion was reached.
+5. The results are displayed in separate output sections.
 
 ---
 
-# Infrastructure
+# Tech Stack
 
-Training Environment:
+### Model Development
 
-- Google Colab
+* Qwen2.5-3B-Instruct
+* Hugging Face Transformers
+* PEFT
+* Accelerate
+* BitsAndBytes
 
-Model Development:
+### Knowledge Distillation
 
-- Hugging Face Transformers
-- PEFT
-- Accelerate
-- Datasets
+* Llama-4-scout-17b-16e-instruct (via Groq API)
+* Chain-of-Thought Distillation
 
-Inference:
+### Training
 
-- GGUF Runtime
-- Hugging Face Spaces
+* LoRA
+* QLoRA
+* Google Colab (T4 GPU)
 
-Frontend:
+### Deployment
 
-- Gradio
+* Converted to GGUF (5-bit precision)
+* Hugging Face Hub
+* Hugging Face Spaces
 
-Deployment:
+### Frontend
 
-- Hugging Face Hub
-- Hugging Face Spaces
+* Gradio
 
 ---
 
@@ -532,19 +431,30 @@ Deployment:
 ## Input
 
 ```text
-The Licensee shall indemnify, defend, and hold harmless
-the Licensor from any claims, damages, liabilities,
-costs, and expenses arising from the Licensee's use
-of the licensed materials.
+The Customer agrees to indemnify, defend, and hold harmless the Provider from and against any and all claims, liabilities, damages, losses, or expenses arising out of or in any way connected with the Customer's misuse of the software platform.
 ```
 
 ## Output
 
+The output is divided into two sections.
+
+### Plain-English Summary
+
 ```text
-If someone makes a legal claim or causes problems
-because of how you use the licensed materials,
-you are responsible for handling those issues and
-paying any related costs instead of the licensor.
+* Indemnification Obligation: The Customer agrees to protect and shield the Provider from claims made against them.
+* Scope of Protection: This protection covers all claims related to the misuse of the software platform by the Customer.
+* Financial Responsibility: The Customer must cover any financial losses, liabilities, damages, or expenses incurred by the Provider due to the Customer's actions.
+```
+
+### CoT Reasoning
+
+```text
+1. IDENTIFY: This is a contractual indemnification clause, and its primary legal objective is to protect the Provider from claims made by third parties due to the Customer's misuse of the software platform.
+2. TRANSLATE: The dense or ambiguous terms in this text include "indemnify," which means to compensate someone for losses; "hold harmless," which means to ensure that no one can sue you; and "claims, liabilities, damages, losses, or expenses," which refer to any financial or legal consequences.
+3. COGNITIVE TRACE: 
+   - Step 1: Identify the parties involved - The Customer agrees to indemnify, defend, and hold harmless the Provider.
+   - Step 2: Understand the scope of protection - This includes claims arising out of or connected with the Customer's misuse of the software platform.
+   - Step 3: Determine the obligations - The Customer must compensate for any losses, liabilities, damages, or expenses incurred by the Provider due to the Customer's actions.
 ```
 
 ---
@@ -553,25 +463,14 @@ paying any related costs instead of the licensor.
 
 The project successfully demonstrates:
 
-- Chain-of-Thought Distillation for legal-domain tasks.
-- Parameter-efficient fine-tuning using QLoRA.
-- Lightweight model deployment through GGUF quantization.
-- CPU-only serving on Hugging Face Spaces.
-- Practical legal text simplification with domain guardrails.
-
----
-
-# Future Improvements
-
-Potential extensions include:
-
-- Contract summarization.
-- Obligation extraction.
-- Risk assessment.
-- Legal clause classification.
-- Retrieval-Augmented Generation (RAG).
-- Multi-language legal simplification.
-- LegalBench evaluation.
+* Chain-of-Thought Knowledge Distillation.
+* Legal-domain reasoning supervision.
+* Parameter-efficient fine-tuning (PEFT) using QLoRA.
+* Assistant-only loss masking.
+* Zero-shot clasiifcation: domain guardrails.
+* Efficient GGUF quantization.
+* CPU-only deployment on Hugging Face Spaces.
+* Practical legal text simplification for real-world use cases.
 
 ---
 
@@ -585,16 +484,8 @@ The generated outputs are simplified interpretations of legal text and should no
 
 # Author
 
-Ayush
+Ayush Ghatak
 
-This project demonstrates practical experience across:
+## Domains Covered
 
-- Dataset Engineering
-- Prompt Engineering
-- Knowledge Distillation
-- Chain-of-Thought Supervision
-- LoRA / QLoRA Fine-Tuning
-- Model Quantization
-- LLM Deployment
-- Hugging Face Ecosystem
-- Gradio Application Development
+Legal AI • NLP • Large Language Models (LLMs) • Knowledge Distillation • Chain-of-Thought Distillation • Supervised Fine-Tuning • LoRA • QLoRA • PEFT • Prompt Engineering • Dataset Engineering • Zero-Shot Classification • Natural Language Inference (NLI) • Model Quantization • GGUF • Hugging Face • Gradio • LLM Deployment 
