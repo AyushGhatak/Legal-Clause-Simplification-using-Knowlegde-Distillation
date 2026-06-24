@@ -493,6 +493,6 @@ The generated outputs are simplified interpretations of legal text and should no
 
 # Author
 
-Ayush Ghatak
+### Ayush Ghatak
 
 • Legal AI • NLP • Large Language Models (LLMs) • Knowledge Distillation • Chain-of-Thought Distillation • Supervised Fine-Tuning • LoRA • QLoRA • PEFT • Prompt Engineering • Dataset Engineering • Zero-Shot Classification • Natural Language Inference (NLI) • Model Quantization • GGUF • Hugging Face • Gradio • LLM Deployment 
