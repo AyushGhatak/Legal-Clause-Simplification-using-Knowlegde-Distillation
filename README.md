@@ -371,7 +371,7 @@ After training:
 
 1. LoRA adapters were merged with the base model.
 2. The merged model was exported to Hugging Face.
-3. The model was converted to GGUF format.
+3. The model was converted to GGUF format using [ggml-org/gguf-my-repo](https://huggingface.co/spaces/ggml-org/gguf-my-repo).
 4. A 5-bit quantized version was generated.
 5. The application was deployed on Hugging Face Spaces.
 
