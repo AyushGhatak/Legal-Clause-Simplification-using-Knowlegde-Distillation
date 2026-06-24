@@ -1,1 +1,5 @@
-
+This folder contains
+* master_compiled_legal_dataset.csv : Preprocessed unified dataset.
+* distilled_legal_dataset.csv : Distilled dataset for Student Model Fine-Tuning.
+* latest_sft_chatbot_dataset.jsonl : Chat Template - Supervised Fine-Tuning.
+* distilled_state_tracker.csv : Tracking the number of rows from the preprocessed unified dataset passed to the teacher model via inference less Groq API. 
